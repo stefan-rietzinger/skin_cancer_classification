@@ -18,51 +18,6 @@ from torchsummary import summary
 
 import torchvision.models as models 
 
-# class MNIST_skin_cancer(Dataset):
-#     def __init__(self, data_path: str, train: bool, test_size: float = 0.2, random_state: int = 1, transform=None, target_transform=None):
-#         self.data_path = data_path
-#         self.img_dirs = [os.path.join(data_path, image_dirs) for image_dirs in ["ham10000_images_part_1", "ham10000_images_part_2"]]
-#         self.transform = transform 
-#         self.target_transform = target_transform
-#         # split metadata in training and testing data! If training true use training data as metadata else use testing data
-#         metadata = pd.read_csv(os.path.join(data_path, "HAM10000_metadata.csv"))
-#         train_data, test_data = train_test_split(metadata, test_size=test_size, random_state=random_state, stratify=metadata["dx"])
-#         self.metadata = train_data if train else test_data
-        
-#         # create dictionary to encode targets into integer values!
-#         self.class_to_idx = {label: idx for idx, label in enumerate(self.metadata['dx'].unique())}
-#         self.num_classes = len(self.class_to_idx)  # Number of classes (for one-hot encoding)
-
-#     def __len__(self) -> int:
-#         return len(self.metadata)
-    
-#     def __getitem__(self, idx: int) -> tuple:
-#         # read out label and image name from metadata!
-#         label = self.metadata.iloc[idx].dx
-#         image_name = f"{self.metadata.iloc[idx].image_id}.jpg"
-
-#         # find image file in img_dirs and read into image!
-#         for directory in self.img_dirs:
-#             img_path = os.path.join(self.data_path, directory, image_name)
-#             if os.path.exists(img_path):
-#                 image = read_image(img_path).float()
-#                 break
-#         else:
-#             raise Exception("FILE DOES NOT EXIST!")
-        
-#         # transform label into numerical value
-#         label = self.class_to_idx[label]
-        
-#         # One-hot encode the label
-#         label = F.one_hot(torch.tensor(label), num_classes=self.num_classes)  # One-hot encoding
-
-#         # apply transform or target transform if wanted
-#         if self.transform:
-#             image = self.transform(image)
-#         if self.target_transform:
-#             label = self.target_transform(label)
-#         return image, label
-
 # class to import custom dataset
 class MNIST_skin_cancer(Dataset):
     def __init__(self, data_path:str, train:bool, test_size:float=0.2, random_state:int=1, transform=None, target_transform=None):
@@ -123,80 +78,7 @@ class CNN(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-    
-# class Net(nn.Module):
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.flatten = nn.Flatten()
-#         self.linear_relu_stack = nn.Sequential(
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-#             nn.Linear(3*450*600, 1024),
-#             nn.ReLU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(1024,1024),
-#             nn.ReLU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(1024,512),
-#             nn.ReLU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(512,512),
-#             nn.ReLU(),
-#             nn.Dropout(0.3),
-#             nn.Linear(512,7),
-#         )
 
-#     def forward(self, x):
-#         x = self.flatten(x)
-#         logits = self.linear_relu_stack(x)
-#         return logits
-
-
-# # definition of a convolutional NN
-# class Net(nn.Module):
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-#         self.conv_stack = nn.Sequential(
-#             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-#             nn.BatchNorm2d(32),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),  # Downsample
-
-#             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-#             nn.BatchNorm2d(64),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),  # Further downsample
-
-#             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-#             nn.BatchNorm2d(128),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),  # Further downsample
-#         )
-#         self.fc_stack = nn.Sequential(
-#             nn.Linear(128 * 28 * 37, 512),  # Adjusted for pooled output size
-#             nn.ReLU(),
-#             # nn.Dropout(0.1),
-#             nn.Linear(512, 512),
-#             nn.ReLU(),
-#             # nn.Dropout(0.1),
-#             nn.Linear(512,512),
-#             nn.ReLU(),
-#             # nn.Dropout(0.05),
-#             # nn.Linear(1024, 512),
-#             # nn.ReLU(),
-#             # nn.Dropout(0.05),
-#             # nn.Linear(512, 512),
-#             # nn.ReLU(),
-#             # nn.Dropout(0.1),
-#             nn.Linear(512,7) # output layer
-#         )
-
-#     def forward(self, x):
-#         x = self.pool(x)  # Pool on the original input
-#         x = self.conv_stack(x)  # Pass through convolutional stack
-#         x = torch.flatten(x, start_dim=1)  # Flatten before fully connected layers
-#         logits = self.fc_stack(x)  # Pass through fully connected layers
-#         return logits
 
 class Net(nn.Module):
     def __init__(self):
@@ -236,83 +118,6 @@ class Net(nn.Module):
         return logits
 
 
-
-# class Net(nn.Module): # custom CNN model
-    
-#     def __init__(self, model='resnet50'):
-#         super(Net, self).__init__()
-        
-#         # self.num_classes = num_classes
-#         # print(f'There are {self.num_classes} classes.')
-#         self.num_classes = 7
-        
-#         self.chosen_model = model
-        
-#         # Choosing backbone CNN
-            
-#         self.model = models.resnet50(pretrained=True)
-        
-#         self.classifier = nn.Sequential(
-#             nn.Dropout(p=0.1), # regularisation
-            
-#             # Common practise to set nn.Linear with no bias if using batchnorm after it.
-#             # As batchnorm normalises activitations from nn.Linear, it also removes the bias from nn.Linear,
-#             # and it adds its own bias term. Thus, nn.Linear bias term is redundant.
-            
-#             nn.Linear(self.model.fc.in_features, 256, bias=False), 
-#             nn.ReLU(),
-#             nn.BatchNorm1d(256),
-
-#             nn.Linear(256, 128, bias=False),
-#             nn.ReLU(),
-#             nn.BatchNorm1d(128),
-
-#             nn.Linear(128, self.num_classes, bias=False),
-#             nn.BatchNorm1d(self.num_classes), 
-#         )
-#         self.model.fc = self.classifier
-        
- 
-#         print(f'{self.chosen_model} created')
-        
-#         model_parameters = filter(lambda p: p.requires_grad, self.model.parameters())
-#         params = sum([np.prod(p.size()) for p in model_parameters])
-#         print(f'Model has {params} trainable params.')
-
-#     def forward(self, x):
-        
-#         return self.model(x)
-
-# class Net(nn.Module):
-#     def __init__(self):
-#         super(Net, self).__init__()
-#         self.conv_stack = nn.Sequential(
-#             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-#             nn.BatchNorm2d(32),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-
-#             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-#             nn.BatchNorm2d(64),
-#             nn.ReLU(),
-#             nn.MaxPool2d(kernel_size=2, stride=2),
-#         )
-#         self.fc_stack = nn.Sequential(
-#             nn.AdaptiveAvgPool2d((1, 1)),  # Global Average Pooling
-#             nn.Flatten(),
-#             nn.Linear(64, 1024),
-#             nn.ReLU(),
-#             nn.Dropout(0.5),  # Dropout for regularization
-#             nn.Linear(1024, 512),
-#             nn.ReLU(),
-#             nn.Dropout(0.5),
-#             nn.Linear(512, 7),  # Output layer for 7 classes
-#         )
-
-#     def forward(self, x):
-#         x = self.conv_stack(x)
-#         x = self.fc_stack(x)
-#         return x
 
 def train_loop(dataloader, model, loss_fn, optimizer, scheduler, batch_size, train_accuracy_list, train_loss_list, verbose=False):
     size = len(dataloader.dataset)
@@ -479,3 +284,204 @@ if __name__=="__main__":
 # learning rate erhoehen! (dadurch flexible learning rate abdrehen)
 # Hyperparameters tunen!
 # -> wenns nicht hoeher wird; binary outcome!
+
+
+# Funktionenfriedhof:
+# ----------------------------------
+
+
+# class Net(nn.Module): # custom CNN model
+    
+#     def __init__(self, model='resnet50'):
+#         super(Net, self).__init__()
+        
+#         # self.num_classes = num_classes
+#         # print(f'There are {self.num_classes} classes.')
+#         self.num_classes = 7
+        
+#         self.chosen_model = model
+        
+#         # Choosing backbone CNN
+            
+#         self.model = models.resnet50(pretrained=True)
+        
+#         self.classifier = nn.Sequential(
+#             nn.Dropout(p=0.1), # regularisation
+            
+#             # Common practise to set nn.Linear with no bias if using batchnorm after it.
+#             # As batchnorm normalises activitations from nn.Linear, it also removes the bias from nn.Linear,
+#             # and it adds its own bias term. Thus, nn.Linear bias term is redundant.
+            
+#             nn.Linear(self.model.fc.in_features, 256, bias=False), 
+#             nn.ReLU(),
+#             nn.BatchNorm1d(256),
+
+#             nn.Linear(256, 128, bias=False),
+#             nn.ReLU(),
+#             nn.BatchNorm1d(128),
+
+#             nn.Linear(128, self.num_classes, bias=False),
+#             nn.BatchNorm1d(self.num_classes), 
+#         )
+#         self.model.fc = self.classifier
+        
+ 
+#         print(f'{self.chosen_model} created')
+        
+#         model_parameters = filter(lambda p: p.requires_grad, self.model.parameters())
+#         params = sum([np.prod(p.size()) for p in model_parameters])
+#         print(f'Model has {params} trainable params.')
+
+#     def forward(self, x):
+        
+#         return self.model(x)
+
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.conv_stack = nn.Sequential(
+#             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+
+#             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(64),
+#             nn.ReLU(),
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#         )
+#         self.fc_stack = nn.Sequential(
+#             nn.AdaptiveAvgPool2d((1, 1)),  # Global Average Pooling
+#             nn.Flatten(),
+#             nn.Linear(64, 1024),
+#             nn.ReLU(),
+#             nn.Dropout(0.5),  # Dropout for regularization
+#             nn.Linear(1024, 512),
+#             nn.ReLU(),
+#             nn.Dropout(0.5),
+#             nn.Linear(512, 7),  # Output layer for 7 classes
+#         )
+
+#     def forward(self, x):
+#         x = self.conv_stack(x)
+#         x = self.fc_stack(x)
+#         return x
+
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.flatten = nn.Flatten()
+#         self.linear_relu_stack = nn.Sequential(
+#             nn.MaxPool2d(kernel_size=2, stride=2),
+#             nn.Linear(3*450*600, 1024),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(1024,1024),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(1024,512),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(512,512),
+#             nn.ReLU(),
+#             nn.Dropout(0.3),
+#             nn.Linear(512,7),
+#         )
+
+#     def forward(self, x):
+#         x = self.flatten(x)
+#         logits = self.linear_relu_stack(x)
+#         return logits
+
+
+# # definition of a convolutional NN
+# class Net(nn.Module):
+#     def __init__(self):
+#         super(Net, self).__init__()
+#         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+#         self.conv_stack = nn.Sequential(
+#             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(32),
+#             nn.ReLU(),
+#             nn.MaxPool2d(kernel_size=2, stride=2),  # Downsample
+
+#             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(64),
+#             nn.ReLU(),
+#             nn.MaxPool2d(kernel_size=2, stride=2),  # Further downsample
+
+#             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(128),
+#             nn.ReLU(),
+#             nn.MaxPool2d(kernel_size=2, stride=2),  # Further downsample
+#         )
+#         self.fc_stack = nn.Sequential(
+#             nn.Linear(128 * 28 * 37, 512),  # Adjusted for pooled output size
+#             nn.ReLU(),
+#             # nn.Dropout(0.1),
+#             nn.Linear(512, 512),
+#             nn.ReLU(),
+#             # nn.Dropout(0.1),
+#             nn.Linear(512,512),
+#             nn.ReLU(),
+#             # nn.Dropout(0.05),
+#             # nn.Linear(1024, 512),
+#             # nn.ReLU(),
+#             # nn.Dropout(0.05),
+#             # nn.Linear(512, 512),
+#             # nn.ReLU(),
+#             # nn.Dropout(0.1),
+#             nn.Linear(512,7) # output layer
+#         )
+
+#     def forward(self, x):
+#         x = self.pool(x)  # Pool on the original input
+#         x = self.conv_stack(x)  # Pass through convolutional stack
+#         x = torch.flatten(x, start_dim=1)  # Flatten before fully connected layers
+#         logits = self.fc_stack(x)  # Pass through fully connected layers
+#         return logits
+
+# class MNIST_skin_cancer(Dataset):
+#     def __init__(self, data_path: str, train: bool, test_size: float = 0.2, random_state: int = 1, transform=None, target_transform=None):
+#         self.data_path = data_path
+#         self.img_dirs = [os.path.join(data_path, image_dirs) for image_dirs in ["ham10000_images_part_1", "ham10000_images_part_2"]]
+#         self.transform = transform 
+#         self.target_transform = target_transform
+#         # split metadata in training and testing data! If training true use training data as metadata else use testing data
+#         metadata = pd.read_csv(os.path.join(data_path, "HAM10000_metadata.csv"))
+#         train_data, test_data = train_test_split(metadata, test_size=test_size, random_state=random_state, stratify=metadata["dx"])
+#         self.metadata = train_data if train else test_data
+        
+#         # create dictionary to encode targets into integer values!
+#         self.class_to_idx = {label: idx for idx, label in enumerate(self.metadata['dx'].unique())}
+#         self.num_classes = len(self.class_to_idx)  # Number of classes (for one-hot encoding)
+
+#     def __len__(self) -> int:
+#         return len(self.metadata)
+    
+#     def __getitem__(self, idx: int) -> tuple:
+#         # read out label and image name from metadata!
+#         label = self.metadata.iloc[idx].dx
+#         image_name = f"{self.metadata.iloc[idx].image_id}.jpg"
+
+#         # find image file in img_dirs and read into image!
+#         for directory in self.img_dirs:
+#             img_path = os.path.join(self.data_path, directory, image_name)
+#             if os.path.exists(img_path):
+#                 image = read_image(img_path).float()
+#                 break
+#         else:
+#             raise Exception("FILE DOES NOT EXIST!")
+        
+#         # transform label into numerical value
+#         label = self.class_to_idx[label]
+        
+#         # One-hot encode the label
+#         label = F.one_hot(torch.tensor(label), num_classes=self.num_classes)  # One-hot encoding
+
+#         # apply transform or target transform if wanted
+#         if self.transform:
+#             image = self.transform(image)
+#         if self.target_transform:
+#             label = self.target_transform(label)
+#         return image, label

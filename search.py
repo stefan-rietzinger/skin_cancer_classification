@@ -69,7 +69,8 @@ class MNIST_skin_cancer(Dataset):
             metadata = valid_data 
             self.metadata = self._undersample(metadata)
         elif dataset_type == "test":
-            self.metadata = test_data
+            metadata = test_data
+            self.metadata = self._undersample(metadata)
         else:
             raise ValueError("Invalid type for 'dataset_type'. Please choose from 'train','val' or 'test'!")
         
@@ -126,59 +127,9 @@ class MNIST_skin_cancer(Dataset):
             label = self.target_transform(label)
         return image, label    
 
-# define function to optimize the model!
-# def define_model(trial):
-#     # These are the parameters optuna will optimize the model on!
-#     num_conv_filters1 = trial.suggest_int("num_conv_filters1", 16, 64, step=16)         # Filters for 1st Conv layer
-#     num_conv_filters2 = trial.suggest_int("num_conv_filters2", 32, 128, step=32)        # Filters for 2nd Conv layer
-#     dropout_rate = trial.suggest_float("dropout_rate", 0.2, 0.5)                        # Dropout regularization rate
-#     fc_layer_size = trial.suggest_categorical("fc_layer_size", [128, 256, 512, 1024])        # Fully Connected Layer size
-
-#     class Net(nn.Module):
-#         def __init__(self):
-#             super(Net, self).__init__()
-#             self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-            
-#             # Convolutional stack
-#             self.conv_stack = nn.Sequential(
-#                 nn.Conv2d(3, num_conv_filters1, kernel_size=3, stride=1, padding=1),
-#                 nn.BatchNorm2d(num_conv_filters1),
-#                 nn.ReLU(),
-#                 nn.MaxPool2d(kernel_size=2, stride=2),  # Downsample
-
-#                 nn.Conv2d(num_conv_filters1, num_conv_filters2, kernel_size=3, stride=1, padding=1),
-#                 nn.BatchNorm2d(num_conv_filters2),
-#                 nn.ReLU(),
-#                 nn.MaxPool2d(kernel_size=2, stride=2),  # Further downsample
-#             )
-            
-#             # Fully connected stack
-#             self.fc_stack = nn.Sequential(
-#                 nn.Dropout(dropout_rate),  # Dropout regularization
-#                 nn.Linear(num_conv_filters2 * 56 * 75, fc_layer_size),  # Adjust based on input size
-#                 nn.ReLU(),
-#                 nn.BatchNorm1d(fc_layer_size),
-
-#                 nn.Linear(fc_layer_size, fc_layer_size // 2),  # Reduce dimensions
-#                 nn.ReLU(),
-#                 nn.BatchNorm1d(fc_layer_size // 2),
-
-#                 nn.Linear(fc_layer_size // 2, 7),  # Output layer
-#                 nn.BatchNorm1d(7),
-#             )
-
-#         def forward(self, x):
-#             x = self.pool(x)                    # Pool on the original input
-#             x = self.conv_stack(x)              # Pass through convolutional stack
-#             x = torch.flatten(x, start_dim=1)   # Flatten before fully connected layers
-#             logits = self.fc_stack(x)           # Pass through fully connected layers
-#             return logits
-
-#     return Net()
-
 def define_model(trial):
     # Parameters for convolutional layers
-    num_conv_layers = trial.suggest_int("num_conv_layers", 2, 10)  # Number of Conv layers
+    num_conv_layers = trial.suggest_int("num_conv_layers", 2, 7)  # Number of Conv layers
     conv_filter_sizes = [trial.suggest_int(f"conv_filters_{i+1}", 16, 64, step=16) for i in range(num_conv_layers)]
     kernel_size = trial.suggest_categorical("kernel_size", [3, 5])  # Kernel size (3x3 or 5x5)
     activation_func = trial.suggest_categorical("activation_func", ["ReLU", "LeakyReLU"])
@@ -352,16 +303,8 @@ def objective(trial):
         train_dataloader = DataLoader(training_data, batch_size=BATCHSIZE, shuffle=True,pin_memory=True, num_workers=8)
         val_dataloader = DataLoader(val_data, batch_size=BATCHSIZE, shuffle=True,pin_memory=True, num_workers=8)
         
-        # # initialize the loss function!
-        # # we have an inbalanced dataset, so I use weights to tackle the issue!
-        # y_train = torch.tensor([training_data.class_to_idx[dat] for dat in training_data.metadata["dx"]])
-        # # Compute class weights
-        # class_counts = torch.bincount(y_train)  # y_train contains your labels
-        # weights = 1. / class_counts.float()
-        # weights = weights.to(DEVICE)
-
         # Pass the class weights to CrossEntropyLoss
-        loss_fn = nn.CrossEntropyLoss() #weight=weights)
+        loss_fn = nn.CrossEntropyLoss()
 
         # train and validate model for multiple epochs
         valid_accuracy_array = np.array([])
@@ -373,27 +316,19 @@ def objective(trial):
             valid_accuracy_array = np.append(valid_accuracy_array, valid_accuracy)
             valid_loss_array = np.append(valid_loss_array, valid_loss)
 
-        # report accuracy to optuna
-        # print(f"result: mean_valid_accuracy: {np.mean(valid_accuracy_array)}, mean_valid_loss_function: {np.mean(valid_loss_array)}")
-        
         # prune trial if performance is poor
         if trial.should_prune():
             raise optuna.exceptions.TrialPruned()
-        
-        # return valid_loss
-        # return valid_accuracy
 
-        # return (np.mean(valid_accuracy_array), np.mean(valid_loss_array))
-        # return (np.median(valid_accuracy_array), np.median(valid_loss_array))
         return (np.mean(valid_accuracy_array[-10:])) # it gets stable in the end
     
-    except: # torch.cuda.OutOfMemoryError: # when 8GB GPU RAM is not enough :(
+    except torch.cuda.OutOfMemoryError: # when 8GB GPU RAM is not enough :(
         torch.cuda.empty_cache()        # clear the GPU memory!
         raise                           # re-raise exception so Optuna can catch it
 
 if __name__ == "__main__":
     # Create an Optuna study to maximize validation accuracy
-    # study = optuna.create_study(directions=["maximize","minimize"])
+    # study = optuna.create_study(directions=["maximize","minimize"]) # multi-objective optimization
     study = optuna.create_study(direction="maximize")
 
     # Run the optimization with a timeout of 3000 seconds
@@ -416,17 +351,6 @@ if __name__ == "__main__":
     print("  Params: ")
     for key, value in trial.params.items():
         print(f"    {key}: {value}")
-
-    # # Print the Pareto front trials
-    # print("Pareto front trials:")
-    # for trial in study.best_trials:
-    #     print(f"  Trial #{trial.number}")
-    #     print(f"    Values: {trial.values}")  # Validation accuracy and loss
-    #     print(f"    Params: {trial.params}")
-
-    # # plot the Pareto front
-    # fig = vis.plot_pareto_front(study, target_names=["Validation Accuracy", "Validation Loss"])
-    # fig.write_image(os.path.join(DIR,"pareto_front.png"))
 
     # plot param importances
     fig = vis.plot_param_importances(study)

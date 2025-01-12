@@ -6,6 +6,9 @@ Author: Stefan Rietzinger, Date: 12.1.2025
 ### Summary
 The objective of this project is to train a Convolutional Neural Network (CNN) to classify cancerous melanoma cases from the "Skin Cancer MNIST 10000" dataset without the use of pre-trained models. The **pytorch** framework was utilised to define the CNN architecture, while **optuna** was employed for hyperparameter tuning via Bayesian optimisation. The model was trained on an "NVIDIA GeForce RTX 4060" with 8GB DDR6 VRAM. 
 
+--- 
+### Files overview:
+
 
 ---
 ### Challenges
@@ -42,8 +45,13 @@ In the context of single-objective optimisation, Optuna employs [*Bayesian optim
 
 The graph entitled "param_importances.png", located in the "search" folder, provides a visual representation of the Hyperparameter importances. The optimal solution was determined after 134 rounds, owing to the substantial number of tuning parameters.
 
-It is also noteworthy that Optuna is capable of performing multi-objective optimisation through the utilisation of a genetic algorithm. [*NSGA-II algorithm*] (https://pymoo.org/algorithms/moo/nsga2.html) (Non-dominated Sorting Genetic Algorithm II). It is planned that this will be used in the future for the development of a model that will maximise performance whilst minimising thel models complexity.
+It is also noteworthy that Optuna is capable of performing multi-objective optimisation through the utilisation of a genetic algorithm. [*NSGA-II algorithm*](https://pymoo.org/algorithms/moo/nsga2.html) (Non-dominated Sorting Genetic Algorithm II). It is planned that this will be used in the future for the development of a model that will maximise performance whilst minimising thel models complexity.
 
 ---
 ### Results:
 
+
+---
+### Possible Optimizations:
+
+---

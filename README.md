@@ -32,7 +32,7 @@ Due to the restriction of GPU-RAM to 8GB, the complexity of the models was const
 
 ---
 ### Hyperparameter tuning: 
-The library [**optuna**] (https://optuna.org/) was utilised for the training of hyperparameters. The Hyperparameter tuning process can be observed in the search.py file. Of course the Hyperparameters were tuned on the validation-set.
+The library [**optuna**](https://optuna.org/) was utilised for the training of hyperparameters. The Hyperparameter tuning process can be observed in the search.py file. Of course the Hyperparameters were tuned on the validation-set.
 
 In the context of single-objective optimisation, Optuna employs [*Bayesian optimisation*](https://en.wikipedia.org/wiki/Bayesian_optimization). This approach is expected to facilitate more expeditious and effective hyperparameter tuning in comparison to conventional methods such as "GridSearch" or "RandomSearch". The optimization process involves the simultaneous adjustment of multiple parameters, including those that govern the architecture of the CNN itself, in addition to those that regulate the regularization or learning rate.
 - lr
